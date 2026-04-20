@@ -30,3 +30,16 @@ A multi-device finale experience with:
 - Use unique `session` query strings per class/demo.
 - Keep host tab active for best synchronization.
 - Audience browsers need one user gesture (`Join Session`) to enable WebAudio playback.
+
+## Security hardening (required for production)
+
+This app now signs users in with Firebase Anonymous Auth and expects locked-down Realtime Database rules.
+
+1. Enable **Anonymous** sign-in in Firebase Authentication.
+2. Deploy rules from `database.rules.json`:
+   ```bash
+   firebase deploy --only database
+   ```
+3. On host page, click **Claim Host Controls** before running stage actions.
+
+Why: Firebase web config values are public identifiers in browser apps; data security comes from Auth + Rules.

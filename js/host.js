@@ -3,6 +3,7 @@ import {
   subscribeToSessionState,
   setSessionState,
   postHostMessage,
+  claimHostRole,
   SESSION_ID
 } from "./shared.js";
 
@@ -27,6 +28,8 @@ const flashOffBtn = document.getElementById("flashOffBtn");
 const pulseOnBtn = document.getElementById("pulseOnBtn");
 const pulseOffBtn = document.getElementById("pulseOffBtn");
 const sendMessageBtn = document.getElementById("sendMessageBtn");
+const claimHostBtn = document.getElementById("claimHostBtn");
+const hostClaimStatusEl = document.getElementById("hostClaimStatus");
 const audioOnBtn = document.getElementById("audioOnBtn");
 const audioOffBtn = document.getElementById("audioOffBtn");
 const audioBuildBtn = document.getElementById("audioBuildBtn");
@@ -139,6 +142,53 @@ async function stopCountdown() {
   await postHostMessage("Countdown stopped.");
 }
 
+claimHostBtn.addEventListener("click", async () => {
+  try {
+    const result = await claimHostRole();
+    if (result.claimed) {
+      hostClaimStatusEl.textContent = "Host controls claimed";
+      await postHostMessage("Host controls are now active.");
+      return;
+    }
+
+    hostClaimStatusEl.textContent = "Another host already claimed this session";
+  } catch (error) {
+    console.error("Host claim failed:", error);
+    hostClaimStatusEl.textContent = "Host claim failed";
+  }
+});
+
+async function runHostAction(action) {
+  try {
+    await action();
+  } catch (error) {
+    console.error("Host action failed:", error);
+    hostBannerEl.textContent = "Action denied. Click 'Claim Host Controls' first.";
+  }
+}
+
+stageLobbyBtn.addEventListener("click", async () => {
+  await runHostAction(async () => {
+    await setSessionState({ stage: "lobby", countdownEndsAt: null, pulseMode: false, flashMode: false });
+  });
+});
+
+stageCountdownBtn.addEventListener("click", async () => {
+  await runHostAction(beginCountdown);
+});
+
+stageHypeBtn.addEventListener("click", async () => {
+  await runHostAction(async () => {
+    await setSessionState({ stage: "hype", pulseMode: true, flashMode: true });
+    await postHostMessage("HYPE MODE ACTIVATED");
+  });
+});
+
+stageRevealBtn.addEventListener("click", async () => {
+  await runHostAction(async () => {
+    await setSessionState({ stage: "reveal", flashMode: false, pulseMode: true });
+    await postHostMessage("Welcome to Demo Day. Build loud.");
+  });
 stageLobbyBtn.addEventListener("click", async () => {
   await setSessionState({ stage: "lobby", countdownEndsAt: null, pulseMode: false, flashMode: false });
 });
@@ -158,29 +208,69 @@ stageRevealBtn.addEventListener("click", async () => {
 });
 
 flashOnBtn.addEventListener("click", async () => {
-  await setSessionState({ flashMode: true });
+  await runHostAction(async () => {
+    await setSessionState({ flashMode: true });
+  });
 });
 
 flashOffBtn.addEventListener("click", async () => {
-  await setSessionState({ flashMode: false });
+  await runHostAction(async () => {
+    await setSessionState({ flashMode: false });
+  });
 });
 
 pulseOnBtn.addEventListener("click", async () => {
-  await setSessionState({ pulseMode: true });
+  await runHostAction(async () => {
+    await setSessionState({ pulseMode: true });
+  });
 });
 
 pulseOffBtn.addEventListener("click", async () => {
-  await setSessionState({ pulseMode: false });
+  await runHostAction(async () => {
+    await setSessionState({ pulseMode: false });
+  });
 });
 
+startCountdownBtn.addEventListener("click", () => runHostAction(beginCountdown));
+stopCountdownBtn.addEventListener("click", () => runHostAction(stopCountdown));
 startCountdownBtn.addEventListener("click", beginCountdown);
 stopCountdownBtn.addEventListener("click", stopCountdown);
 
 sendMessageBtn.addEventListener("click", async () => {
-  const message = messageInputEl.value.trim();
-  if (!message) return;
-  await postHostMessage(message);
-  messageInputEl.value = "";
+  await runHostAction(async () => {
+    const message = messageInputEl.value.trim();
+    if (!message) return;
+    await postHostMessage(message);
+    messageInputEl.value = "";
+  });
+});
+
+audioOnBtn.addEventListener("click", async () => {
+  await runHostAction(async () => {
+    await setSessionState({ audioMode: true });
+    await postHostMessage("Audio mode enabled.");
+  });
+});
+
+audioOffBtn.addEventListener("click", async () => {
+  await runHostAction(async () => {
+    await setSessionState({ audioMode: false });
+    await postHostMessage("Audio mode disabled.");
+  });
+});
+
+audioBuildBtn.addEventListener("click", async () => {
+  await runHostAction(async () => {
+    await setSessionState({ audioProfile: "build" });
+    await postHostMessage("Audio profile: build-up.");
+  });
+});
+
+audioDropBtn.addEventListener("click", async () => {
+  await runHostAction(async () => {
+    await setSessionState({ audioProfile: "drop" });
+    await postHostMessage("Audio profile: drop.");
+  });
 });
 
 audioOnBtn.addEventListener("click", async () => {

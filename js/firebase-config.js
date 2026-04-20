@@ -1,4 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // Your web app's Firebase configuration
@@ -18,6 +19,7 @@ function hasPlaceholderValues(config) {
 }
 
 let db = null;
+let auth = null;
 let firebaseReady = false;
 let firebaseReason = "";
 
@@ -28,6 +30,7 @@ if (hasPlaceholderValues(firebaseConfig)) {
   try {
     const app = initializeApp(firebaseConfig);
     db = getDatabase(app);
+    auth = getAuth(app);
     firebaseReady = true;
   } catch (err) {
     firebaseReason = err?.message || "Firebase failed to initialize.";
@@ -35,4 +38,22 @@ if (hasPlaceholderValues(firebaseConfig)) {
   }
 }
 
+let authPromise = null;
+
+async function ensureSignedIn() {
+  if (!firebaseReady || !auth) return null;
+  if (auth.currentUser) return auth.currentUser;
+
+  if (!authPromise) {
+    authPromise = signInAnonymously(auth)
+      .then((credential) => credential.user)
+      .finally(() => {
+        authPromise = null;
+      });
+  }
+
+  return authPromise;
+}
+
+export { db, auth, firebaseReady, firebaseReason, ensureSignedIn };
 export { db, firebaseReady, firebaseReason };
