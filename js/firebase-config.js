@@ -2,14 +2,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAcsYdGabCT8LaMJZsIkhs3nKCVedDkd0s",
+  authDomain: "fir-cbbc7.firebaseapp.com",
+  projectId: "fir-cbbc7",
+  storageBucket: "fir-cbbc7.firebasestorage.app",
+  messagingSenderId: "132553995380",
+  appId: "1:132553995380:web:6807030184134de74e4d21",
+  measurementId: "G-BF0BPDFWHW"
 };
 
 function hasPlaceholderValues(config) {
@@ -54,3 +56,4 @@ async function ensureSignedIn() {
 }
 
 export { db, auth, firebaseReady, firebaseReason, ensureSignedIn };
+export { db, firebaseReady, firebaseReason };

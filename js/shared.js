@@ -7,6 +7,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 import { db, firebaseReady, firebaseReason, ensureSignedIn } from "./firebase-config.js";
+  remove
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+import { db, firebaseReady, firebaseReason } from "./firebase-config.js";
 
 export const SESSION_ID = new URLSearchParams(window.location.search).get("session") || "inf286finale";
 
@@ -31,6 +35,10 @@ function readLocalStore() {
     };
   } catch {
     return { state: {}, participants: {}, meta: {} };
+      participants: parsed.participants || {}
+    };
+  } catch {
+    return { state: {}, participants: {} };
   }
 }
 
@@ -49,6 +57,7 @@ if (localChannel) {
     if (!event?.data) return;
     if (event.data.type === "sync") {
       localStore = event.data.payload || { state: {}, participants: {}, meta: {} };
+      localStore = event.data.payload || { state: {}, participants: {} };
       writeLocalStore();
       notifyLocalSubscribers();
     }
@@ -77,6 +86,10 @@ function fallbackToLocalMode(reason) {
   if (!useFirebase) return;
   useFirebase = false;
   console.warn(`[shared] Firebase unavailable; switching to local demo mode. ${reason || ""}`.trim());
+function fallbackToLocalMode(reason) {
+  if (!useFirebase) return;
+  useFirebase = false;
+  console.warn(`[shared] Firebase operation failed; switching to local demo mode. ${reason || ""}`.trim());
   localStore = readLocalStore();
   notifyLocalSubscribers();
 }
@@ -127,6 +140,18 @@ export function subscribeToSessionState(callback) {
         console.error("[shared] Auth failed:", error);
       });
 
+export function subscribeToSessionState(callback) {
+  if (useFirebase) {
+    onValue(
+      sessionRef("state"),
+      (snapshot) => {
+        callback(snapshot.val() || {});
+      },
+      (error) => {
+        fallbackToLocalMode(error?.message);
+        callback(localStore.state || {});
+      }
+    );
     return;
   }
 
@@ -166,6 +191,16 @@ export function subscribeToParticipants(callback) {
         console.error("[shared] Auth failed:", error);
       });
 
+    onValue(
+      sessionRef("participants"),
+      (snapshot) => {
+        callback(snapshot.val() || {});
+      },
+      (error) => {
+        fallbackToLocalMode(error?.message);
+        callback(localStore.participants || {});
+      }
+    );
     return;
   }
 
@@ -181,6 +216,9 @@ export async function setSessionState(partialState) {
       return;
     } catch (error) {
       if (isPermissionError(error)) throw error;
+      await update(sessionRef("state"), partialState);
+      return;
+    } catch (error) {
       fallbackToLocalMode(error?.message);
     }
   }
@@ -212,6 +250,9 @@ export async function upsertParticipant(id, payload) {
       return;
     } catch (error) {
       if (isPermissionError(error)) throw error;
+      await update(sessionRef(`participants/${id}`), payload);
+      return;
+    } catch (error) {
       fallbackToLocalMode(error?.message);
     }
   }
@@ -233,6 +274,9 @@ export async function removeParticipant(id) {
       return;
     } catch (error) {
       if (isPermissionError(error)) throw error;
+      await remove(sessionRef(`participants/${id}`));
+      return;
+    } catch (error) {
       fallbackToLocalMode(error?.message);
     }
   }

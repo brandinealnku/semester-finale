@@ -189,6 +189,22 @@ stageRevealBtn.addEventListener("click", async () => {
     await setSessionState({ stage: "reveal", flashMode: false, pulseMode: true });
     await postHostMessage("Welcome to Demo Day. Build loud.");
   });
+stageLobbyBtn.addEventListener("click", async () => {
+  await setSessionState({ stage: "lobby", countdownEndsAt: null, pulseMode: false, flashMode: false });
+});
+
+stageCountdownBtn.addEventListener("click", async () => {
+  await beginCountdown();
+});
+
+stageHypeBtn.addEventListener("click", async () => {
+  await setSessionState({ stage: "hype", pulseMode: true, flashMode: true });
+  await postHostMessage("HYPE MODE ACTIVATED");
+});
+
+stageRevealBtn.addEventListener("click", async () => {
+  await setSessionState({ stage: "reveal", flashMode: false, pulseMode: true });
+  await postHostMessage("Welcome to Demo Day. Build loud.");
 });
 
 flashOnBtn.addEventListener("click", async () => {
@@ -217,6 +233,8 @@ pulseOffBtn.addEventListener("click", async () => {
 
 startCountdownBtn.addEventListener("click", () => runHostAction(beginCountdown));
 stopCountdownBtn.addEventListener("click", () => runHostAction(stopCountdown));
+startCountdownBtn.addEventListener("click", beginCountdown);
+stopCountdownBtn.addEventListener("click", stopCountdown);
 
 sendMessageBtn.addEventListener("click", async () => {
   await runHostAction(async () => {
@@ -253,6 +271,26 @@ audioDropBtn.addEventListener("click", async () => {
     await setSessionState({ audioProfile: "drop" });
     await postHostMessage("Audio profile: drop.");
   });
+});
+
+audioOnBtn.addEventListener("click", async () => {
+  await setSessionState({ audioMode: true });
+  await postHostMessage("Audio mode enabled.");
+});
+
+audioOffBtn.addEventListener("click", async () => {
+  await setSessionState({ audioMode: false });
+  await postHostMessage("Audio mode disabled.");
+});
+
+audioBuildBtn.addEventListener("click", async () => {
+  await setSessionState({ audioProfile: "build" });
+  await postHostMessage("Audio profile: build-up.");
+});
+
+audioDropBtn.addEventListener("click", async () => {
+  await setSessionState({ audioProfile: "drop" });
+  await postHostMessage("Audio profile: drop.");
 });
 
 subscribeToParticipants((participants) => {
