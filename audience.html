@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>INF 286 Audience</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="audience-page">
+  <main class="audience-shell" id="audienceShell">
+    <div class="audience-card">
+      <h1>INF 286 Finale</h1>
+      <p class="subtitle">Your phone is now part of the experience.</p>
+
+      <label class="label" for="displayName">Enter your name</label>
+      <input id="displayName" type="text" maxlength="24" placeholder="Your name or nickname" />
+
+      <div class="button-row">
+        <button id="joinBtn">Join Session</button>
+      </div>
+
+      <div class="status-box">
+        <p><strong>Status:</strong> <span id="statusText">Not connected</span></p>
+        <p><strong>Stage:</strong> <span id="stageText">lobby</span></p>
+      </div>
+
+      <div id="liveMessage" class="live-message">Waiting for host...</div>
+
+      <div id="audienceVisual" class="audience-visual">
+        <div class="orb"></div>
+      </div>
+
+      <div class="tiny-note">
+        Keep this page open and follow the host instructions.
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/audience.js"></script>
+</body>
+</html>
