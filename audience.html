@@ -7,10 +7,12 @@
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body class="audience-page">
+  <div class="cinematic-backdrop"></div>
   <main class="audience-shell" id="audienceShell">
     <div class="audience-card">
+      <p class="eyebrow">Live Companion Screen</p>
       <h1>INF 286 Finale</h1>
-      <p class="subtitle">Your phone is now part of the experience.</p>
+      <p class="subtitle">Your phone is now part of Demo Day.</p>
 
       <label class="label" for="displayName">Enter your name</label>
       <input id="displayName" type="text" maxlength="24" placeholder="Your name or nickname" />
@@ -22,16 +24,19 @@
       <div class="status-box">
         <p><strong>Status:</strong> <span id="statusText">Not connected</span></p>
         <p><strong>Stage:</strong> <span id="stageText">lobby</span></p>
+        <p><strong>Countdown:</strong> <span id="countdownText">--:--</span></p>
+        <p><strong>Audio:</strong> <span id="audioStatusText">Off</span></p>
       </div>
 
       <div id="liveMessage" class="live-message">Waiting for host...</div>
 
       <div id="audienceVisual" class="audience-visual">
+        <div class="light-beam"></div>
         <div class="orb"></div>
       </div>
 
       <div class="tiny-note">
-        Keep this page open and follow the host instructions.
+        Keep this page open and follow host instructions.
       </div>
     </div>
   </main>

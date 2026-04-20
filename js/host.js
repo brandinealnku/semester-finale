@@ -8,10 +8,15 @@ import {
 
 const connectedCountEl = document.getElementById("connectedCount");
 const currentStageEl = document.getElementById("currentStage");
+const hostCountdownEl = document.getElementById("hostCountdown");
 const audienceGridEl = document.getElementById("audienceGrid");
 const hostBannerEl = document.getElementById("hostBanner");
 const messageInputEl = document.getElementById("messageInput");
 const joinLinkTextEl = document.getElementById("joinLinkText");
+
+const countdownSecondsEl = document.getElementById("countdownSeconds");
+const startCountdownBtn = document.getElementById("startCountdownBtn");
+const stopCountdownBtn = document.getElementById("stopCountdownBtn");
 
 const stageLobbyBtn = document.getElementById("stageLobbyBtn");
 const stageCountdownBtn = document.getElementById("stageCountdownBtn");
@@ -22,6 +27,10 @@ const flashOffBtn = document.getElementById("flashOffBtn");
 const pulseOnBtn = document.getElementById("pulseOnBtn");
 const pulseOffBtn = document.getElementById("pulseOffBtn");
 const sendMessageBtn = document.getElementById("sendMessageBtn");
+const audioOnBtn = document.getElementById("audioOnBtn");
+const audioOffBtn = document.getElementById("audioOffBtn");
+const audioBuildBtn = document.getElementById("audioBuildBtn");
+const audioDropBtn = document.getElementById("audioDropBtn");
 
 const hostVideo = document.getElementById("hostVideo");
 const hostCanvas = document.getElementById("hostCanvas");
@@ -31,6 +40,7 @@ const stopCameraBtn = document.getElementById("stopCameraBtn");
 let cameraStream = null;
 let latestParticipants = {};
 let latestState = {};
+let countdownTimer = null;
 
 const audienceLink = `${location.origin}${location.pathname.replace("host.html", "audience.html")}?session=${SESSION_ID}`;
 joinLinkTextEl.textContent = audienceLink;
@@ -46,20 +56,30 @@ function renderParticipants(participants) {
 
   audienceGridEl.innerHTML = list.map(([id, person]) => {
     const activeClass = person.joined ? "active" : "";
+    const device = person.deviceType || "unknown";
+    const stage = person.stage || "lobby";
     return `
       <div class="audience-tile ${activeClass}">
+        <span class="badge">${escapeHtml(device)}</span>
         <div class="name">${escapeHtml(person.name || "Anonymous")}</div>
-        <div class="meta">Stage: ${escapeHtml(person.stage || "lobby")}</div>
-        <div class="meta">Joined: ${person.joined ? "Yes" : "No"}</div>
+        <div class="meta">Stage: ${escapeHtml(stage)}</div>
+        <div class="meta">Ping: ${formatPing(person.lastSeen)}</div>
       </div>
     `;
   }).join("");
+}
+
+function formatPing(lastSeen) {
+  if (!lastSeen) return "--";
+  const seconds = Math.max(0, Math.floor((Date.now() - lastSeen) / 1000));
+  return `${seconds}s ago`;
 }
 
 function renderState(state) {
   const stage = state.stage || "lobby";
   currentStageEl.textContent = stage;
   hostBannerEl.textContent = state.message || "Session live.";
+  updateCountdownDisplay(state.countdownEndsAt);
 }
 
 function escapeHtml(value) {
@@ -68,23 +88,73 @@ function escapeHtml(value) {
   return div.innerHTML;
 }
 
+function formatTimeLeft(msLeft) {
+  const safeMs = Math.max(0, msLeft);
+  const totalSeconds = Math.ceil(safeMs / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function updateCountdownDisplay(countdownEndsAt) {
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+
+  if (!countdownEndsAt) {
+    hostCountdownEl.textContent = "--:--";
+    return;
+  }
+
+  const renderTick = () => {
+    const remaining = countdownEndsAt - Date.now();
+    hostCountdownEl.textContent = formatTimeLeft(remaining);
+    if (remaining <= 0 && countdownTimer) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
+  };
+
+  renderTick();
+  countdownTimer = setInterval(renderTick, 250);
+}
+
+async function beginCountdown() {
+  const seconds = Math.min(900, Math.max(5, Number(countdownSecondsEl.value) || 60));
+  const countdownEndsAt = Date.now() + (seconds * 1000);
+
+  await setSessionState({
+    stage: "countdown",
+    countdownEndsAt,
+    flashMode: false,
+    pulseMode: true
+  });
+
+  await postHostMessage(`Countdown started: ${seconds} seconds`);
+}
+
+async function stopCountdown() {
+  await setSessionState({ countdownEndsAt: null, pulseMode: false });
+  await postHostMessage("Countdown stopped.");
+}
+
 stageLobbyBtn.addEventListener("click", async () => {
-  await setSessionState({ stage: "lobby" });
+  await setSessionState({ stage: "lobby", countdownEndsAt: null, pulseMode: false, flashMode: false });
 });
 
 stageCountdownBtn.addEventListener("click", async () => {
-  await setSessionState({ stage: "countdown" });
-  await postHostMessage("Get ready...");
+  await beginCountdown();
 });
 
 stageHypeBtn.addEventListener("click", async () => {
-  await setSessionState({ stage: "hype" });
+  await setSessionState({ stage: "hype", pulseMode: true, flashMode: true });
   await postHostMessage("HYPE MODE ACTIVATED");
 });
 
 stageRevealBtn.addEventListener("click", async () => {
-  await setSessionState({ stage: "reveal" });
-  await postHostMessage("This is what the future of web experiences looks like.");
+  await setSessionState({ stage: "reveal", flashMode: false, pulseMode: true });
+  await postHostMessage("Welcome to Demo Day. Build loud.");
 });
 
 flashOnBtn.addEventListener("click", async () => {
@@ -103,11 +173,34 @@ pulseOffBtn.addEventListener("click", async () => {
   await setSessionState({ pulseMode: false });
 });
 
+startCountdownBtn.addEventListener("click", beginCountdown);
+stopCountdownBtn.addEventListener("click", stopCountdown);
+
 sendMessageBtn.addEventListener("click", async () => {
   const message = messageInputEl.value.trim();
   if (!message) return;
   await postHostMessage(message);
   messageInputEl.value = "";
+});
+
+audioOnBtn.addEventListener("click", async () => {
+  await setSessionState({ audioMode: true });
+  await postHostMessage("Audio mode enabled.");
+});
+
+audioOffBtn.addEventListener("click", async () => {
+  await setSessionState({ audioMode: false });
+  await postHostMessage("Audio mode disabled.");
+});
+
+audioBuildBtn.addEventListener("click", async () => {
+  await setSessionState({ audioProfile: "build" });
+  await postHostMessage("Audio profile: build-up.");
+});
+
+audioDropBtn.addEventListener("click", async () => {
+  await setSessionState({ audioProfile: "drop" });
+  await postHostMessage("Audio profile: drop.");
 });
 
 subscribeToParticipants((participants) => {
@@ -142,7 +235,7 @@ async function startCamera() {
 
 function stopCamera() {
   if (cameraStream) {
-    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream.getTracks().forEach((track) => track.stop());
     cameraStream = null;
   }
   const ctx = hostCanvas.getContext("2d");
@@ -163,15 +256,11 @@ function drawOverlayLoop() {
   const ctx = hostCanvas.getContext("2d");
   ctx.clearRect(0, 0, hostCanvas.width, hostCanvas.height);
 
-  // Placeholder WebAI overlay.
-  // Replace this with TensorFlow.js / face-api / coco-ssd detections.
   ctx.strokeStyle = "#19d3ff";
   ctx.lineWidth = 4;
-  ctx.font = "bold 28px Inter, Arial";
+  ctx.font = "bold 24px Inter, Arial";
   ctx.fillStyle = "#19d3ff";
   ctx.fillText(`AI detected: ${Object.keys(latestParticipants).length} future developers`, 24, 42);
-
-  // Demo box just to show where overlays can go.
   ctx.strokeRect(40, 70, 220, 180);
 
   requestAnimationFrame(drawOverlayLoop);
