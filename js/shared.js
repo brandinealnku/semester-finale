@@ -6,20 +6,25 @@ import {
   runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-import { db, firebaseReady, firebaseReason, ensureSignedIn } from "./firebase-config.js";
-  remove
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {
+  db,
+  firebaseReady,
+  firebaseReason,
+  ensureSignedIn
+} from "./firebase-config.js";
 
-import { db, firebaseReady, firebaseReason } from "./firebase-config.js";
-
-export const SESSION_ID = new URLSearchParams(window.location.search).get("session") || "inf286finale";
+export const SESSION_ID =
+  new URLSearchParams(window.location.search).get("session") || "inf286finale";
 
 let useFirebase = firebaseReady;
 let currentUid = null;
 
 const localSessionKey = `inf286-local-session-${SESSION_ID}`;
 const channelName = `inf286-local-channel-${SESSION_ID}`;
-const localChannel = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel(channelName) : null;
+const localChannel =
+  typeof BroadcastChannel !== "undefined"
+    ? new BroadcastChannel(channelName)
+    : null;
 
 let localStore = readLocalStore();
 const stateListeners = new Set();
@@ -34,11 +39,11 @@ function readLocalStore() {
       meta: parsed.meta || {}
     };
   } catch {
-    return { state: {}, participants: {}, meta: {} };
-      participants: parsed.participants || {}
+    return {
+      state: {},
+      participants: {},
+      meta: {}
     };
-  } catch {
-    return { state: {}, participants: {} };
   }
 }
 
@@ -47,17 +52,25 @@ function writeLocalStore() {
 }
 
 function notifyLocalSubscribers() {
-  for (const callback of stateListeners) callback(localStore.state || {});
-  for (const callback of participantListeners) callback(localStore.participants || {});
+  for (const callback of stateListeners) {
+    callback(localStore.state || {});
+  }
+  for (const callback of participantListeners) {
+    callback(localStore.participants || {});
+  }
 }
 
 if (localChannel) {
   localChannel.addEventListener("message", (event) => {
     if (useFirebase) return;
     if (!event?.data) return;
+
     if (event.data.type === "sync") {
-      localStore = event.data.payload || { state: {}, participants: {}, meta: {} };
-      localStore = event.data.payload || { state: {}, participants: {} };
+      localStore = event.data.payload || {
+        state: {},
+        participants: {},
+        meta: {}
+      };
       writeLocalStore();
       notifyLocalSubscribers();
     }
@@ -66,6 +79,7 @@ if (localChannel) {
 
 function broadcastLocalSync() {
   if (!localChannel) return;
+
   localChannel.postMessage({
     type: "sync",
     payload: localStore
@@ -84,12 +98,11 @@ function isPermissionError(error) {
 
 function fallbackToLocalMode(reason) {
   if (!useFirebase) return;
+
   useFirebase = false;
-  console.warn(`[shared] Firebase unavailable; switching to local demo mode. ${reason || ""}`.trim());
-function fallbackToLocalMode(reason) {
-  if (!useFirebase) return;
-  useFirebase = false;
-  console.warn(`[shared] Firebase operation failed; switching to local demo mode. ${reason || ""}`.trim());
+  console.warn(
+    `[shared] Firebase unavailable; switching to local demo mode. ${reason || ""}`.trim()
+  );
   localStore = readLocalStore();
   notifyLocalSubscribers();
 }
@@ -140,23 +153,13 @@ export function subscribeToSessionState(callback) {
         console.error("[shared] Auth failed:", error);
       });
 
-export function subscribeToSessionState(callback) {
-  if (useFirebase) {
-    onValue(
-      sessionRef("state"),
-      (snapshot) => {
-        callback(snapshot.val() || {});
-      },
-      (error) => {
-        fallbackToLocalMode(error?.message);
-        callback(localStore.state || {});
-      }
-    );
     return;
   }
 
   if (firebaseReason) {
-    console.info(`[shared] Using local demo mode for session ${SESSION_ID}: ${firebaseReason}`);
+    console.info(
+      `[shared] Using local demo mode for session ${SESSION_ID}: ${firebaseReason}`
+    );
   }
 
   stateListeners.add(callback);
@@ -191,16 +194,6 @@ export function subscribeToParticipants(callback) {
         console.error("[shared] Auth failed:", error);
       });
 
-    onValue(
-      sessionRef("participants"),
-      (snapshot) => {
-        callback(snapshot.val() || {});
-      },
-      (error) => {
-        fallbackToLocalMode(error?.message);
-        callback(localStore.participants || {});
-      }
-    );
     return;
   }
 
@@ -216,9 +209,6 @@ export async function setSessionState(partialState) {
       return;
     } catch (error) {
       if (isPermissionError(error)) throw error;
-      await update(sessionRef("state"), partialState);
-      return;
-    } catch (error) {
       fallbackToLocalMode(error?.message);
     }
   }
@@ -250,9 +240,6 @@ export async function upsertParticipant(id, payload) {
       return;
     } catch (error) {
       if (isPermissionError(error)) throw error;
-      await update(sessionRef(`participants/${id}`), payload);
-      return;
-    } catch (error) {
       fallbackToLocalMode(error?.message);
     }
   }
@@ -274,9 +261,6 @@ export async function removeParticipant(id) {
       return;
     } catch (error) {
       if (isPermissionError(error)) throw error;
-      await remove(sessionRef(`participants/${id}`));
-      return;
-    } catch (error) {
       fallbackToLocalMode(error?.message);
     }
   }
@@ -289,6 +273,7 @@ export async function removeParticipant(id) {
 
 export async function claimHostRole() {
   if (!useFirebase) {
+    localStore.meta = localStore.meta || {};
     localStore.meta.hostUid = "local-host";
     writeLocalStore();
     broadcastLocalSync();
@@ -297,6 +282,7 @@ export async function claimHostRole() {
 
   const uid = await ensureSessionAuth();
   const hostRef = sessionRef("meta/hostUid");
+
   const result = await runTransaction(hostRef, (currentValue) => {
     if (currentValue === null || currentValue === uid) {
       return uid;
@@ -305,10 +291,18 @@ export async function claimHostRole() {
   });
 
   if (!result.committed) {
-    return { claimed: false, uid, currentHostUid: result.snapshot.val() };
+    return {
+      claimed: false,
+      uid,
+      currentHostUid: result.snapshot.val()
+    };
   }
 
-  return { claimed: true, uid, currentHostUid: uid };
+  return {
+    claimed: true,
+    uid,
+    currentHostUid: uid
+  };
 }
 
 export function createParticipantId() {
