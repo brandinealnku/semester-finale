@@ -53,7 +53,7 @@ function renderParticipants(participants) {
   connectedCountEl.textContent = list.length;
 
   if (!list.length) {
-    audienceGridEl.innerHTML = `<p class="small-note">No students connected yet.</p>`;
+    audienceGridEl.innerHTML = `<p class=\"small-note\">No students connected yet.</p>`;
     return;
   }
 
@@ -62,13 +62,7 @@ function renderParticipants(participants) {
     const device = person.deviceType || "unknown";
     const stage = person.stage || "lobby";
     return `
-      <div class="audience-tile ${activeClass}">
-        <span class="badge">${escapeHtml(device)}</span>
-        <div class="name">${escapeHtml(person.name || "Anonymous")}</div>
-        <div class="meta">Stage: ${escapeHtml(stage)}</div>
-        <div class="meta">Ping: ${formatPing(person.lastSeen)}</div>
-      </div>
-    `;
+      <div class=\"audience-tile ${activeClass}\">\n        <span class=\"badge\">${escapeHtml(device)}</span>\n        <div class=\"name\">${escapeHtml(person.name || "Anonymous")}</div>\n        <div class=\"meta\">Stage: ${escapeHtml(stage)}</div>\n        <div class=\"meta\">Ping: ${formatPing(person.lastSeen)}</div>\n      </div>\n    `;
   }).join("");
 }
 
@@ -189,22 +183,6 @@ stageRevealBtn.addEventListener("click", async () => {
     await setSessionState({ stage: "reveal", flashMode: false, pulseMode: true });
     await postHostMessage("Welcome to Demo Day. Build loud.");
   });
-stageLobbyBtn.addEventListener("click", async () => {
-  await setSessionState({ stage: "lobby", countdownEndsAt: null, pulseMode: false, flashMode: false });
-});
-
-stageCountdownBtn.addEventListener("click", async () => {
-  await beginCountdown();
-});
-
-stageHypeBtn.addEventListener("click", async () => {
-  await setSessionState({ stage: "hype", pulseMode: true, flashMode: true });
-  await postHostMessage("HYPE MODE ACTIVATED");
-});
-
-stageRevealBtn.addEventListener("click", async () => {
-  await setSessionState({ stage: "reveal", flashMode: false, pulseMode: true });
-  await postHostMessage("Welcome to Demo Day. Build loud.");
 });
 
 flashOnBtn.addEventListener("click", async () => {
@@ -233,8 +211,6 @@ pulseOffBtn.addEventListener("click", async () => {
 
 startCountdownBtn.addEventListener("click", () => runHostAction(beginCountdown));
 stopCountdownBtn.addEventListener("click", () => runHostAction(stopCountdown));
-startCountdownBtn.addEventListener("click", beginCountdown);
-stopCountdownBtn.addEventListener("click", stopCountdown);
 
 sendMessageBtn.addEventListener("click", async () => {
   await runHostAction(async () => {
@@ -271,26 +247,6 @@ audioDropBtn.addEventListener("click", async () => {
     await setSessionState({ audioProfile: "drop" });
     await postHostMessage("Audio profile: drop.");
   });
-});
-
-audioOnBtn.addEventListener("click", async () => {
-  await setSessionState({ audioMode: true });
-  await postHostMessage("Audio mode enabled.");
-});
-
-audioOffBtn.addEventListener("click", async () => {
-  await setSessionState({ audioMode: false });
-  await postHostMessage("Audio mode disabled.");
-});
-
-audioBuildBtn.addEventListener("click", async () => {
-  await setSessionState({ audioProfile: "build" });
-  await postHostMessage("Audio profile: build-up.");
-});
-
-audioDropBtn.addEventListener("click", async () => {
-  await setSessionState({ audioProfile: "drop" });
-  await postHostMessage("Audio profile: drop.");
 });
 
 subscribeToParticipants((participants) => {
