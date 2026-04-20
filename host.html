@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>INF 286 Hype Host</title>
+  <title>INF 286 Demo Day Host</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body class="host-page">
+  <div class="cinematic-backdrop"></div>
   <header class="topbar">
     <div>
-      <h1>INF 286 Multi-Device Finale</h1>
+      <p class="eyebrow">Live Production Console</p>
+      <h1>INF 286 Demo Day</h1>
       <p class="subtitle">Host Control Panel</p>
     </div>
     <div class="topbar-stats">
@@ -20,6 +22,10 @@
       <div class="stat-card">
         <span class="stat-label">Stage</span>
         <span id="currentStage" class="stat-value">lobby</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Countdown</span>
+        <span id="hostCountdown" class="stat-value">--:--</span>
       </div>
     </div>
   </header>
@@ -37,6 +43,28 @@
           <button id="flashOffBtn">Flash Off</button>
           <button id="pulseOnBtn">Pulse On</button>
           <button id="pulseOffBtn">Pulse Off</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Real Countdown</h2>
+        <div class="countdown-controls">
+          <label for="countdownSeconds" class="label">Duration (seconds)</label>
+          <input id="countdownSeconds" type="number" min="5" max="900" value="60" />
+          <div class="button-row">
+            <button id="startCountdownBtn">Start Countdown</button>
+            <button id="stopCountdownBtn" class="secondary">Stop Countdown</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Host Audio Mode</h2>
+        <div class="audio-grid">
+          <button id="audioOnBtn">Audio On</button>
+          <button id="audioOffBtn" class="secondary">Audio Off</button>
+          <button id="audioBuildBtn">Build-up</button>
+          <button id="audioDropBtn">Drop</button>
         </div>
       </div>
 
@@ -59,7 +87,7 @@
       <div class="panel">
         <h2>Host Camera + WebAI Layer</h2>
         <p class="small-note">
-          This is where you can add TensorFlow.js / face detection / people boxes.
+          Camera is optional for local stage visuals and livestream overlays.
         </p>
 
         <div class="camera-wrap">
@@ -69,7 +97,7 @@
 
         <div class="button-row">
           <button id="startCameraBtn">Start Camera</button>
-          <button id="stopCameraBtn">Stop Camera</button>
+          <button id="stopCameraBtn" class="secondary">Stop Camera</button>
         </div>
       </div>
     </section>
