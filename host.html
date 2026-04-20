@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>INF 286 Hype Host</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="host-page">
+  <header class="topbar">
+    <div>
+      <h1>INF 286 Multi-Device Finale</h1>
+      <p class="subtitle">Host Control Panel</p>
+    </div>
+    <div class="topbar-stats">
+      <div class="stat-card">
+        <span class="stat-label">Connected</span>
+        <span id="connectedCount" class="stat-value">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Stage</span>
+        <span id="currentStage" class="stat-value">lobby</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="host-layout">
+    <section class="host-left">
+      <div class="panel">
+        <h2>Live Control</h2>
+        <div class="button-grid">
+          <button id="stageLobbyBtn">Lobby</button>
+          <button id="stageCountdownBtn">Countdown</button>
+          <button id="stageHypeBtn">Hype Mode</button>
+          <button id="stageRevealBtn">Reveal</button>
+          <button id="flashOnBtn">Flash On</button>
+          <button id="flashOffBtn">Flash Off</button>
+          <button id="pulseOnBtn">Pulse On</button>
+          <button id="pulseOffBtn">Pulse Off</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Message to Audience</h2>
+        <div class="message-row">
+          <input id="messageInput" type="text" placeholder="Type a message for students..." />
+          <button id="sendMessageBtn">Send</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Session QR / Join Link</h2>
+        <p>Share this page with students:</p>
+        <div class="join-link-box">
+          <code id="joinLinkText">audience.html?session=inf286finale</code>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Host Camera + WebAI Layer</h2>
+        <p class="small-note">
+          This is where you can add TensorFlow.js / face detection / people boxes.
+        </p>
+
+        <div class="camera-wrap">
+          <video id="hostVideo" autoplay playsinline muted></video>
+          <canvas id="hostCanvas"></canvas>
+        </div>
+
+        <div class="button-row">
+          <button id="startCameraBtn">Start Camera</button>
+          <button id="stopCameraBtn">Stop Camera</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="host-right">
+      <div class="panel big-panel">
+        <h2>Audience Grid</h2>
+        <div id="audienceGrid" class="audience-grid"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Live Feed Banner</h2>
+        <div id="hostBanner" class="host-banner">
+          Waiting for students to join...
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/host.js"></script>
+</body>
+</html>
